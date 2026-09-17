@@ -1,18 +1,16 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
+  "installCommand": "npm install --production=false",
   "functions": {
-    "api/src/server.js": {
-      "includeFiles": "dist/**"
-    },
-    "api/**/*.js": {
+    "api/index.js": {
       "includeFiles": "dist/**"
     }
   },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/src/server.js"
+      "destination": "/api/index.js"
     }
   ]
 }
