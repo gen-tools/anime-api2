@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "functions": {
+    "api/src/server.js": {
+      "includeFiles": "dist/**"
+    },
+    "api/**/*.js": {
+      "includeFiles": "dist/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/src/server.js"
+    }
+  ]
+}
