@@ -1,0 +1,24 @@
+{
+  "name": "toko-extension",
+  "version": "1.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx build.ts && node api/src/server.js",
+    "build": "tsx build.ts",
+    "start": "node api/src/server.js",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "esbuild": "^0.25.0",
+    "express": "^5.2.1",
+    "jszip": "^3.10.1",
+    "puppeteer-real-browser": "^1.4.4",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
