@@ -362,7 +362,7 @@ function parseTitles(query) {
   return Array.isArray(raw) ? raw.map(String) : [String(raw)];
 }
 
-async function optionsFromReq(req) {
+async function optionsFromReq(req, defaultMaxConcurrency = 8) {
   let anilistId = Number(req.query.anilistId);
   const callerTitles = parseTitles(req.query).filter(Boolean);
   // Alias known mistaken ID: 20851 is only mapped to 113415 if caller titles indicate Jujutsu Kaisen
@@ -383,9 +383,10 @@ async function optionsFromReq(req) {
     titles = anilistTitles;
   }
 
-  // A fan-out across providers can throttle if set too low. Set a healthy
-  // default concurrency of 8 so stream sweeps complete quickly without timeouts.
-  const providerOptions = { maxConcurrency: 8, timeoutMs: 15_000 };
+  // Stream lookups use the full bounded pool because the providers are
+  // independent and the JSON endpoint waits for the complete result set.
+  // Other endpoints retain the existing concurrency default.
+  const providerOptions = { maxConcurrency: defaultMaxConcurrency, timeoutMs: 15_000 };
   for (const key of ['maxConcurrency', 'maxRetries', 'retryDelayMs', 'timeoutMs']) {
     const raw = req.query[key];
     if (raw == null || raw === '') continue;
@@ -499,7 +500,7 @@ async function handleSourceRequest(req, res, mode) {
 
   if (!t) return res.json(empty);
 
-  const opts = await optionsFromReq(req);
+  const opts = await optionsFromReq(req, mode === 'stream' ? 24 : 8);
   const useSSE = req.query.stream !== '0';
   const key = cacheKey(mode, opts);
 
