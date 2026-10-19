@@ -98,6 +98,10 @@ function getToko() {
 const STREAM_TTL_MS  = 10 * 60 * 1000; // 10 minutes
 const TORRENT_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_CACHE_SIZE = 200;
+// The API's process cache already keeps stream results for 10 minutes. Expose
+// the same freshness window to Vercel's CDN so repeated requests for an exact
+// episode can reuse the shared response instead of fanning out to every source.
+const STREAM_RESPONSE_CACHE_CONTROL = 'public, s-maxage=600, stale-while-revalidate=60';
 
 const cache = new Map(); // key → { data, expiresAt }
 
@@ -517,6 +521,10 @@ async function handleSourceRequest(req, res, mode) {
       sseEvent(res, 'done', { totalCount: hit.count, cached: true });
       return res.end();
     }
+    res.setHeader(
+      'Cache-Control',
+      hit.count > 0 ? STREAM_RESPONSE_CACHE_CONTROL : 'no-store',
+    );
     return res.json(hit);
   }
 
@@ -573,6 +581,12 @@ async function handleSourceRequest(req, res, mode) {
     return res.end();
   }
 
+  // Cache successful, non-empty JSON responses at the Vercel edge. Empty
+  // results remain uncached there so a temporary provider outage can recover.
+  res.setHeader(
+    'Cache-Control',
+    result.count > 0 ? STREAM_RESPONSE_CACHE_CONTROL : 'no-store',
+  );
   return res.json(result);
 }
 
